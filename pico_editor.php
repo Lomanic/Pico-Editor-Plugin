@@ -86,17 +86,22 @@ class Pico_Editor {
 	 * @param string $file_url the file URL to be edited
 	 * @return string
 	 */
-	private static function get_real_filename($file_url) {
+	private static function get_real_filename($file_url) 
+    {
 
 		$file_components = parse_url($file_url); // inner
 		$base_components = parse_url($_SESSION['pico_config']['base_url']);
 		$file_path = rtrim($file_components['path'], '/');
 		$base_path = rtrim($base_components['path'], '/');
 
-		if (empty($file_path) || $file_path === $base_path) {
+		if (empty($file_path) || $file_path === $base_path) 
 			return 'index';
-		} else {
-			return basename(strip_tags($file_path));
+		else
+        {
+            $file_path = substr($file_path, strlen($base_path));
+            if(is_dir(CONTENT_DIR . $file_path))
+                $file_path .= "/index";
+            return strip_tags($file_path);
 		}
 	}
 
@@ -127,7 +132,7 @@ Date: '. date('Y/m/d') .'
 			'error' => $error
 		)));
 	}
-	
+
 	private function do_open()
 	{
 		if(!isset($_SESSION['pico_logged_in']) || !$_SESSION['pico_logged_in']) die(json_encode(array('error' => 'Error: Unathorized')));
