@@ -113,6 +113,17 @@ class Pico_Editor {
     {
         if(!isset($_SESSION['pico_logged_in']) || !$_SESSION['pico_logged_in']) die(json_encode(array('error' => 'Error: Unathorized')));
         $title = isset($_POST['title']) && $_POST['title'] ? strip_tags($_POST['title']) : '';
+        $dir = isset($_POST['dir']) && $_POST['dir'] ? strip_tags($_POST['dir']) : '';
+
+        $contentDir = CONTENT_DIR . $dir;
+        if($contentDir[strlen(count($contentDir)-1)] != '/') $contentDir .= '/';
+
+        if(!is_dir($contentDir)) {
+            if (!mkdir($contentDir, 0777, true)) {
+                die(json_encode(array('error' => 'Can\'t create directory...')));
+            }
+        }
+
         $file = $this->slugify(basename($title));
         if(!$file) die(json_encode(array('error' => 'Error: Invalid file name')));
 
@@ -123,20 +134,22 @@ Title: '. $title .'
 Author:
 Date: '. date('Y/m/d') .'
 */';
-        if(file_exists(CONTENT_DIR . $file))
+        if(file_exists($contentDir . $file))
         {
             $error = 'Error: A post already exists with this title';
         }
         else
         {
-            if(strlen($content) !== file_put_contents(CONTENT_DIR . $file, $content))
+            if(strlen($content) !== file_put_contents($contentDir . $file, $content))
                 $error = 'Error: can not create the post ... ';
         }
+
+        $file_url = $dir .'/'. str_replace(CONTENT_EXT, '', $file);
 
         die(json_encode(array(
             'title' => $title,
             'content' => $content,
-            'file' => basename(str_replace(CONTENT_EXT, '', $file)),
+            'file' => $file_url,
             'error' => $error
         )));
     }
@@ -169,7 +182,7 @@ Date: '. date('Y/m/d') .'
 
         die(json_encode(array(
             'content' => $content,
-            'file' => basename(str_replace(CONTENT_EXT, '', $file)),
+            'file' => $file_url,
             'error' => $error
         )));
     }

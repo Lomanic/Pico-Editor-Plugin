@@ -17,7 +17,8 @@
 		</div>
 		<ul class="nav">
 		{% for page in pages %}
-			<li><a href="#" data-url="{{ page.url }}" class="post"><span data-icon="3" aria-hidden="true"></span>{% if page.title %}{{ page.title }}{% else %}Untitled{% endif %}</a>
+			<!--<li><a href="#" data-url="{{ page.url }}" class="post"><span data-icon="3" aria-hidden="true"></span>{% if page.title %}{{ page.title }}{% else %}Untitled{% endif %}</a>-->
+			<li><a href="#" data-url="{{ page.url }}" class="post"><span data-icon="3" aria-hidden="true"></span>{{ page.url }}</a>
 			<a href="{{ page.url }}" target="_blank" class="view" title="View">5</a>
 			<a href="#" data-url="{{ page.url }}" class="delete" title="Delete">4</a></li>
 		{% endfor %}
@@ -26,12 +27,12 @@
 
 	<div id="main">
 	    <div id="epiceditor"></div>
-	    
+
 	    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
 	    <script src="{{ base_url }}/plugins/pico_editor/epiceditor/js/epiceditor.min.js"></script>
 	    <script>
 	    $(document).ready(function() {
-	    
+
 	    	var unsaved = false;
 		    var editor = new EpicEditor({
 				container: 'epiceditor',
@@ -53,20 +54,21 @@
 				},
 				focusOnLoad: true
 			}).load();
-			
+
 			$(editor.getElement('editor')).on('keyup', function (){
 				if(!unsaved){
 					unsaved = true;
 					document.title += ' *';
 				}
 			});
-			
+
 			// New
 			$('.controls .new').on('click', function(e){
 				e.preventDefault();
+                                var dir = prompt('Please enter the dir(path without host and page/file name)', '/');
 				var title = prompt('Please enter a post title', '');
-				if(title != null && title != ''){
-					$.post('admin/new', { title: title }, function(data){
+				if(title != null && title != '' && dir != null && dir != ''){
+					$.post('admin/new', { title: title, dir: dir }, function(data){
 						if(data.error){
 							alert(data.error);
 						} else {
@@ -80,14 +82,14 @@
 					}, 'json');
 				}
 			});
-			
+
 			// Open post
 			$('.nav').on('click', '.post', function(e){
 				e.preventDefault();
 				if(unsaved && !confirm('You have unsaved changes. Are you sure you want to leave this post?')) return false;
 				$('.nav .post').removeClass('open');
 				$(this).addClass('open');
-				
+
 				var fileUrl = $(this).attr('data-url');
 				$.post('admin/open', { file: fileUrl }, function(data){
 					$('#epiceditor').data('currentFile', fileUrl);
@@ -96,7 +98,7 @@
 					document.title = document.title.replace(' *', '');
 				});
 			});
-			
+
 			// Save post
 			editor.on('autosave', function () {
 				$('#saving').text('Saving...').addClass('active');
@@ -109,18 +111,18 @@
 					}, 1000);
 				});
 			});
-			
+
 			// Save on preview
 			editor.on('preview', function () {
 				editor.emit('autosave');
 			});
-			
+
 			// Delete post
 			$('.nav').on('click', '.delete', function(e){
 				e.preventDefault();
 				if(!confirm('Are you sure you want to delete this file?')) return false;
 				$('.nav .post').removeClass('open');
-				
+
 				var li = $(this).parents('li');
 				var fileUrl = $(this).attr('data-url');
 				$.post('admin/delete', { file: fileUrl }, function(data){
@@ -131,17 +133,17 @@
 					document.title = document.title.replace(' *', '');
 				});
 			});
-			
+
 			// Window resize
 			$('body,#main,#epiceditor').height($(window).height());
 			$(window).resize(function() {
 				$('body,#main,#epiceditor').height($(window).height());
 				editor.reflow();
 			});
-			
+
 		});
 	    </script>
 	</div>
-    
+
 </body>
 </html>
