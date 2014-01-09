@@ -16,7 +16,8 @@ Install
 
 I'm not sure if it is still maintained by it's original author as some of crucial bug fixes are still not merged, so this fork might be usefull as I merged or fixed some of the issues and as I'm going to use it for real I guess I will improve it in time as well.
 
-CHANGELOG:
+CHANGELOG
+---------
 
 - Invalid file error when accessing directory i.e. `base url/subdir/` . Now it correctly looks for `index.md`.  
 - Invalid file error if base url is more than just `http://domain/` i.e. like in my case `http://localhost/~wvi`
