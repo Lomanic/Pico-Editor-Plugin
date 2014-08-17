@@ -10,94 +10,99 @@
  */
 class Pico_Editor {
 
-	private $is_admin;
-	private $is_logout;
-	private $plugin_path;
-	private $password;
+    private $is_admin;
+    private $is_logout;
+    private $plugin_path;
+    private $password;
+    private $url;
 
-	public function __construct()
-	{
-		$this->is_admin = false;
-		$this->is_logout = false;
-		$this->plugin_path = dirname(__FILE__);
-		$this->password = '';
-		session_start();
+    public function __construct()
+    {
+        $this->is_admin = false;
+        $this->is_logout = false;
+        $this->plugin_path = dirname(__FILE__);
+        $this->password = '';
+        $this->url = 'admin';
+        session_start();
 
-		if(file_exists($this->plugin_path .'/pico_editor_config.php')){
-			global $pico_editor_password;
-			include_once($this->plugin_path .'/pico_editor_config.php');
-			$this->password = $pico_editor_password;
-		}
-	}
+        if(file_exists($this->plugin_path .'/pico_editor_config.php')){
+            global $pico_editor_password;
+            global $pico_editor_url;
+            include_once($this->plugin_path .'/pico_editor_config.php');
+            $this->password = $pico_editor_password;
+            $this->url = $pico_editor_url;
+        }
+    }
 
-	public function request_url(&$url)
-	{
-		// Are we looking for /admin?
-		if($url == 'admin') $this->is_admin = true;
-		if($url == 'admin/new') $this->do_new();
-		if($url == 'admin/open') $this->do_open();
-		if($url == 'admin/save') $this->do_save();
-		if($url == 'admin/delete') $this->do_delete();
-		if($url == 'admin/logout') $this->is_logout = true;
-	}
+    public function request_url(&$url)
+    {
+        // Are we looking for /admin?
+        if($url == $this->url) $this->is_admin = true;
+        if($url == $this->url.'/new') $this->do_new();
+        if($url == $this->url.'/open') $this->do_open();
+        if($url == $this->url.'/save') $this->do_save();
+        if($url == $this->url.'/delete') $this->do_delete();
+        if($url == $this->url.'/logout') $this->is_logout = true;
+    }
 
-	public function before_render(&$twig_vars, &$twig)
-	{
-		if($this->is_logout){
-			session_destroy();
-			header('Location: '. $twig_vars['base_url'] .'/admin');
-			exit;
-		}
+    public function before_render(&$twig_vars, &$twig)
+    {
+        if($this->is_logout){
+            session_destroy();
+            header('Location: '. $twig_vars['base_url'] .'/'.$this->url);
+            exit;
+        }
 
-		if($this->is_admin){
-			header($_SERVER['SERVER_PROTOCOL'].' 200 OK'); // Override 404 header
-			$loader = new Twig_Loader_Filesystem($this->plugin_path);
-			$twig_editor = new Twig_Environment($loader, $twig_vars);
-			if(!$this->password){
-				$twig_vars['login_error'] = 'No password set for the Pico Editor.';
-				echo $twig_editor->render('login.html', $twig_vars); // Render login.html
-				exit;
-			}
+        if($this->is_admin){
+            header($_SERVER['SERVER_PROTOCOL'].' 200 OK'); // Override 404 header
+            $loader = new Twig_Loader_Filesystem($this->plugin_path);
+            $twig_editor = new Twig_Environment($loader, $twig_vars);
+            if(!$this->password){
+                $twig_vars['login_error'] = 'No password set for the Pico Editor.';
+                echo $twig_editor->render('login.html', $twig_vars); // Render login.html
+                exit;
+            }
 
-			if(!isset($_SESSION['pico_logged_in']) || !$_SESSION['pico_logged_in']){
-				if(isset($_POST['password'])){
-					if(sha1($_POST['password']) == $this->password){
-						$_SESSION['pico_logged_in'] = true;
-						$_SESSION['pico_config'] = $twig_vars['config'];
-					} else {
-						$twig_vars['login_error'] = 'Invalid password.';
-						echo $twig_editor->render('login.html', $twig_vars); // Render login.html
-						exit;
-					}
-				} else {
-					echo $twig_editor->render('login.html', $twig_vars); // Render login.html
-					exit;
-				}
-			}
+            if(!isset($_SESSION['pico_logged_in']) || !$_SESSION['pico_logged_in']){
+                if(isset($_POST['password'])){
+                    if(hash('sha512',$_POST['password']) == $this->password){
+                        $_SESSION['pico_logged_in'] = true;
+                        $_SESSION['pico_config'] = $twig_vars['config'];
+                    } else {
+                        $twig_vars['login_error'] = 'Invalid password.';
+                        echo $twig_editor->render('login.html', $twig_vars); // Render login.html
+                        exit;
+                    }
+                } else {
+                    echo $twig_editor->render('login.html', $twig_vars); // Render login.html
+                    exit;
+                }
+            }
+            
+            $twig_vars['editor_url'] = $this->url;
+            echo $twig_editor->render('editor.html', $twig_vars); // Render editor.html
+            exit; // Don't continue to render template
+        }
+    }
 
-			echo $twig_editor->render('editor.html', $twig_vars); // Render editor.html
-			exit; // Don't continue to render template
-		}
-	}
-
-	/**
-	 * Returns real file name to be edited.
-	 *
-	 * @param string $file_url the file URL to be edited
-	 * @return string
-	 */
-	private static function get_real_filename($file_url)
+    /**
+     * Returns real file name to be edited.
+     *
+     * @param string $file_url the file URL to be edited
+     * @return string
+     */
+    private static function get_real_filename($file_url)
     {
 
-		$file_components = parse_url($file_url); // inner
-		$base_components = parse_url($_SESSION['pico_config']['base_url']);
-		$file_path = rtrim($file_components['path'], '/');
-		$base_path = rtrim($base_components['path'], '/');
+        $file_components = parse_url($file_url); // inner
+        $base_components = parse_url($_SESSION['pico_config']['base_url']);
+        $file_path = rtrim($file_components['path'], '/');
+        $base_path = rtrim($base_components['path'], '/');
 
-		if(empty($file_path) || $file_path === $base_path)
+        if(empty($file_path) || $file_path === $base_path)
         {
             return 'index';
-		}
+        }
         else
         {
             $file_path = strip_tags(substr($file_path, strlen($base_path)));
@@ -106,12 +111,12 @@ class Pico_Editor {
 
             return $file_path;
         }
-	}
+    }
 
 
     private function do_new()
     {
-        if(!isset($_SESSION['pico_logged_in']) || !$_SESSION['pico_logged_in']) die(json_encode(array('error' => 'Error: Unathorized')));
+        if(!isset($_SESSION['pico_logged_in']) || !$_SESSION['pico_logged_in']) die(json_encode(array('error' => 'Error: Unauthorized')));
         $title = isset($_POST['title']) && $_POST['title'] ? strip_tags($_POST['title']) : '';
         $dir = isset($_POST['dir']) && $_POST['dir'] ? strip_tags($_POST['dir']) : '';
 
@@ -156,7 +161,7 @@ Date: '. date('Y/m/d') .'
 
     private function do_open()
     {
-        if(!isset($_SESSION['pico_logged_in']) || !$_SESSION['pico_logged_in']) die(json_encode(array('error' => 'Error: Unathorized')));
+        if(!isset($_SESSION['pico_logged_in']) || !$_SESSION['pico_logged_in']) die(json_encode(array('error' => 'Error: Unauthorized')));
         $file_url = isset($_POST['file']) && $_POST['file'] ? $_POST['file'] : '';
         $file = self::get_real_filename($file_url);
         if(!$file) die('Error: Invalid file');
@@ -168,7 +173,7 @@ Date: '. date('Y/m/d') .'
 
     private function do_save()
     {
-        if(!isset($_SESSION['pico_logged_in']) || !$_SESSION['pico_logged_in']) die(json_encode(array('error' => 'Error: Unathorized')));
+        if(!isset($_SESSION['pico_logged_in']) || !$_SESSION['pico_logged_in']) die(json_encode(array('error' => 'Error: Unauthorized')));
         $file_url = isset($_POST['file']) && $_POST['file'] ? $_POST['file'] : '';
         $file = self::get_real_filename($file_url);
         if(!$file) die('Error: Invalid file');
@@ -189,7 +194,7 @@ Date: '. date('Y/m/d') .'
 
     private function do_delete()
     {
-        if(!isset($_SESSION['pico_logged_in']) || !$_SESSION['pico_logged_in']) die(json_encode(array('error' => 'Error: Unathorized')));
+        if(!isset($_SESSION['pico_logged_in']) || !$_SESSION['pico_logged_in']) die(json_encode(array('error' => 'Error: Unauthorized')));
         $file_url = isset($_POST['file']) && $_POST['file'] ? $_POST['file'] : '';
         $file = self::get_real_filename($file_url);
         if(!$file) die('Error: Invalid file');
