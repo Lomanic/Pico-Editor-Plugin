@@ -64,6 +64,7 @@
                 if(!unsaved){
                     unsaved = true;
                     document.title += ' *';
+                    window.onbeforeunload=function(){return 'You have unsaved changes. Are you sure you want to leave this post?'}
                 }
             });
             /*editor.on('update', function () { // https://gist.github.com/OscarGodson/d58ef4994ee703ce6622
@@ -73,7 +74,7 @@
             // New
             $('.controls .new').on('click', function(e){
                 e.preventDefault();
-                                var dir = prompt('Please enter the dir(path without host and page/file name)', '/');
+                var dir = prompt('Please enter the dir(path without host and page/file name)', '/');
                 var title = prompt('Please enter a post title', '');
                 if(title != null && title != '' && dir != null && dir != ''){
                     $.post('{{ editor_url }}/new', { title: title, dir: dir }, function(data){
@@ -85,6 +86,7 @@
                             editor.importFile('epiceditor', data.content);
                             unsaved = false;
                             document.title = document.title.replace(' *', '');
+                            window.onbeforeunload=null;
                             $('.nav').prepend('<li><a href="#" data-url="{{ base_url }}/'+ data.file +'" class="post open"><span data-icon="3" aria-hidden="true"></span>'+ data.title +'</a><a href="{{ base_url }}/'+ data.file +'" target="_blank" class="view" title="View">5</a><a href="#" data-url="{{ base_url }}/'+ data.file +'" class="delete" title="Delete">4</a></li>')
                         }
                     }, 'json');
@@ -104,6 +106,7 @@
                     editor.importFile('epiceditor', data);
                     unsaved = false;
                     document.title = document.title.replace(' *', '');
+                    window.onbeforeunload=null;
                 });
             });
 
@@ -114,6 +117,7 @@
                     $('#saving').text('Saved');
                     unsaved = false;
                     document.title = document.title.replace(' *', '');
+                    window.onbeforeunload=null;
                     setTimeout(function(){
                         $('#saving').removeClass('active');
                     }, 1000);
@@ -139,6 +143,7 @@
                     editor.importFile('epiceditor', '');
                     unsaved = false;
                     document.title = document.title.replace(' *', '');
+                    window.onbeforeunload=function(){return 'You have unsaved changes. Are you sure you want to leave this post?'}
                 });
             });
 
