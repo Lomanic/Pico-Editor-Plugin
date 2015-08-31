@@ -147,6 +147,7 @@ Date: '. date('Y/m/d') .'
         {
             if(strlen($content) !== file_put_contents($contentDir . $file, $content))
                 $error = 'Error: can not create the post ... ';
+            chmod($contentDir . $file, 0777);
         }
 
         $file_url = $dir .'/'. str_replace(CONTENT_EXT, '', $file);
