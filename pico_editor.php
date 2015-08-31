@@ -121,7 +121,7 @@ class Pico_Editor {
         $dir = isset($_POST['dir']) && $_POST['dir'] ? strip_tags($_POST['dir']) : '';
 
         $contentDir = CONTENT_DIR . $dir;
-        if($contentDir[strlen(count($contentDir)-1)] != '/') $contentDir .= '/';
+        if($contentDir[strlen($contentDir)-1] != '/') $contentDir .= '/';
 
         if(!is_dir($contentDir)) {
             if (!mkdir($contentDir, 0777, true)) {
