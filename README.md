@@ -23,5 +23,5 @@ CHANGELOG
 - Invalid file error if base url is more than just `http://domain/` i.e. like in my case `http://localhost/~wvi`
 - Rough ability to create files in subdirectories ... it asks for dir first then for post title, editor show page url and not title
 - Customizable admin endpoint/url added by Lomanic
-
+- Now compatible with pico v1.x using @theshka's fork as a base
 
