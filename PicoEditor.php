@@ -129,27 +129,27 @@ class PicoEditor extends AbstractPicoPlugin
     public function onRequestUrl(&$url)
     {
         // are we looking for admin?
-        if ($url == $this->url || ($this->urlRewriting && $url == '/'.$this->url)) {
+        if ($url == $this->url) {
             $this->is_admin = true;
         }
         // are we looking for admin/new?
-        if ($url == $this->url.'/new' || ($this->urlRewriting && $url == '/'.$this->url.'/new')) {
+        if ($url == $this->url.'/new') {
             $this->doNew();
         }
         // are we looking for admin/open?
-        if ($url == $this->url.'/open' || ($this->urlRewriting && $url == '/'.$this->url.'/open')) {
+        if ($url == $this->url.'/open') {
             $this->doOpen();
         }
         // are we looking for admin/save?
-        if ($url == $this->url.'/save' || ($this->urlRewriting && $url == '/'.$this->url.'/save')) {
+        if ($url == $this->url.'/save') {
             $this->doSave();
         }
         // are we looking for admin/delete?
-        if ($url == $this->url.'/delete' || ($this->urlRewriting && $url == '/'.$this->url.'/delete')) {
+        if ($url == $this->url.'/delete') {
             $this->doDelete();
         }
         // are we looking for admin/logout?
-        if ($url == $this->url.'/logout' || ($this->urlRewriting && $url == '/'.$this->url.'/logout')) {
+        if ($url == $this->url.'/logout') {
             $this->is_logout = true;
         }
     }
