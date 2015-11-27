@@ -7,8 +7,8 @@ Install
 -------
 
 1. Extract download an copy to the "pico_editor" folder to your Pico install "plugins" folder
-2. Open the pico_editor_config.php file and insert your sha512 hashed password and your admin endpoint (default is admin42)
-3. Visit http://www.yoursite.com/admin42 and login
+2. Open the pico_editor_config.php file and insert your sha512 hashed password and your admin endpoint (default is admin)
+3. Visit http://www.yoursite.com/admin and login
 4. Update the permissions if needed.
 5. Thats it :)
 
