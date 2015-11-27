@@ -97,6 +97,7 @@ class PicoEditor extends AbstractPicoPlugin
         $this->plugin_path = dirname(__FILE__);
         $this->contentDir = $config['content_dir'];
         $this->contentExt = $config['content_ext'];
+        $this->urlRewriting = $config['rewrite_url'];
 
         //Check configuration for password
         if (isset($config['PicoEditor']['password']) &&
@@ -109,6 +110,7 @@ class PicoEditor extends AbstractPicoPlugin
         !empty($config['PicoEditor']['url'])) {
             $this->url = $config['PicoEditor']['url'];
         }
+        
 
         // check for session
         if (!isset($_SESSION)) {
@@ -127,27 +129,27 @@ class PicoEditor extends AbstractPicoPlugin
     public function onRequestUrl(&$url)
     {
         // are we looking for admin?
-        if ($url == $this->url) {
+        if ($url == $this->url || ($this->urlRewriting && $url == '/'.$this->url)) {
             $this->is_admin = true;
         }
         // are we looking for admin/new?
-        if ($url == $this->url.'/new') {
+        if ($url == $this->url.'/new' || ($this->urlRewriting && $url == '/'.$this->url.'/new')) {
             $this->doNew();
         }
         // are we looking for admin/open?
-        if ($url == $this->url.'/open') {
+        if ($url == $this->url.'/open' || ($this->urlRewriting && $url == '/'.$this->url.'/open')) {
             $this->doOpen();
         }
         // are we looking for admin/save?
-        if ($url == $this->url.'/save') {
+        if ($url == $this->url.'/save' || ($this->urlRewriting && $url == '/'.$this->url.'/save')) {
             $this->doSave();
         }
         // are we looking for admin/delete?
-        if ($url == $this->url.'/delete') {
+        if ($url == $this->url.'/delete' || ($this->urlRewriting && $url == '/'.$this->url.'/delete')) {
             $this->doDelete();
         }
         // are we looking for admin/logout?
-        if ($url == $this->url.'/logout') {
+        if ($url == $this->url.'/logout' || ($this->urlRewriting && $url == '/'.$this->url.'/logout')) {
             $this->is_logout = true;
         }
     }
@@ -168,7 +170,7 @@ class PicoEditor extends AbstractPicoPlugin
             // destory the current session
             session_destroy();
             // redirect to the login page...
-            header('Location: '.$twigVariables['base_url'].'/?'.$this->url);
+            header('Location: '.$twigVariables['base_url'].'/'.(($this->urlRewriting)?'':'?').$this->url);
             // don't continue to render template
             exit;
         }
@@ -180,14 +182,14 @@ class PicoEditor extends AbstractPicoPlugin
 
             // instance Twig
             $loader = new Twig_Loader_Filesystem($this->plugin_path);
-            $twig_editor = new Twig_Environment($loader, $twigVariables);
+            $twig->setLoader($loader);
 
             // check if no password exists
             if (!$this->password) {
                 // set the error message
                 $twigVariables['login_error'] = 'No password set!';
                 // render the login view
-                echo $twig_editor->render('login.twig', $twigVariables); // Render login.twig
+                echo $twig->render('login.twig', $twigVariables); // Render login.twig
                 // don't continue to render template
                 exit;
             }
@@ -203,13 +205,13 @@ class PicoEditor extends AbstractPicoPlugin
                         // login failure
                         $twigVariables['login_error'] = 'Invalid password.';
                         // render the login view
-                        echo $twig_editor->render('login.twig', $twigVariables); // Render login.twig
+                        echo $twig->render('login.twig', $twigVariables); // Render login.twig
                         // don't continue to render template
                         exit;
                     }
                 } else {
                     // user did not submit a password.
-                    echo $twig_editor->render('login.twig', $twigVariables); // Render login.twig
+                    echo $twig->render('login.twig', $twigVariables); // Render login.twig
                     // don't continue to render template
                     exit;
                 }
@@ -218,7 +220,7 @@ class PicoEditor extends AbstractPicoPlugin
             // customizable endpoint used in editor's template
             $twigVariables['editor_url'] = $this->url;
             // session Exists, render the editor...
-            echo $twig_editor->render('editor.twig', $twigVariables); // Render editor.twig
+            echo $twig->render('editor.twig', $twigVariables); // Render editor.twig
             // don't continue to render template
             exit;
         }
