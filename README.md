@@ -6,22 +6,25 @@ Provides an online Markdown editor and file manager for Pico.
 Install
 -------
 
-1. Extract download an copy to the "pico_editor" folder to your Pico install "plugins" folder
-2. Open the pico_editor_config.php file and insert your sha512 hashed password and your admin endpoint (default is admin)
-3. Visit http://www.yoursite.com/admin and login
+1. Download and extract a copy to the "PicoEditor" folder to your Pico install "plugins" folder
+2. Add the following to your config/config.php file while setting accordingly the different parameters. You can generate your password using a site like http://crypo.in.ua/tools/eng_sha512.php or, in any shell: `echo -n Y0ur_4we5OM3_P455W0RD | sha512sum`
+
+        $config['PicoEditor'] = array(
+              'enabled' => true,
+              'url' => 'my-custom-admin-endpoint',
+              'password' => 'YOUR SHA-512 PASSWORD'
+         );
+3. Visit http://www.yoursite.com/my-custom-admin-endpoint (or /admin by default) and login
 4. Update the permissions if needed.
 5. Thats it :)
 
 
-
-I'm not sure if it is still maintained by it's original author as some of crucial bug fixes are still not merged, so this fork might be usefull as I merged or fixed some of the issues and as I'm going to use it for real I guess I will improve it in time as well.
-
 CHANGELOG
 ---------
 
-- Invalid file error when accessing directory i.e. `base url/subdir/` . Now it correctly looks for `index.md`.  
-- Invalid file error if base url is more than just `http://domain/` i.e. like in my case `http://localhost/~wvi`
-- Rough ability to create files in subdirectories ... it asks for dir first then for post title, editor show page url and not title
-- Customizable admin endpoint/url added by Lomanic
-- Now compatible with pico v1.x using @theshka's fork as a base
+- Invalid file error when accessing directory i.e. `base url/subdir/` . Now it correctly looks for `index.md`.  (w-vi)
+- Invalid file error if base url is more than just `http://domain/` i.e. like in my case `http://localhost/~wvi` (w-vi)
+- Rough ability to create files in subdirectories ... it asks for dir first then for post title, editor show page url and not title (w-vi)
+- Customizable admin endpoint/url (Lomanic)
+- Compatible with pico v1.x (theshka)
 
